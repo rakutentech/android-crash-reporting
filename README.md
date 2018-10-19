@@ -1,4 +1,5 @@
 # Crash Reporting
+[![CircleCI](https://circleci.com/gh/rakutentech/android-crash-reporting/tree/master.svg?style=svg)](https://circleci.com/gh/rakutentech/android-crash-reporting/tree/master)
 
 TODO: description
 
