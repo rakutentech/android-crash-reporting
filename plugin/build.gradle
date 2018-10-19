@@ -1,0 +1,23 @@
+import org.apache.tools.ant.filters.ReplaceTokens
+
+apply plugin: 'groovy'
+
+def mappingApi = System.env.CRASH_MAPPING_API
+
+if (!mappingApi) {
+  throw new GradleException('💥 Set env variable `CRASH_MAPPING_API` in order to build this project')
+}
+
+dependencies {
+  implementation gradleApi()
+  implementation localGroovy()
+  implementation 'com.android.tools.build:gradle:2.3.3'
+  implementation 'org.apache.httpcomponents:httpmime:4.5.5'
+}
+
+processResources {
+  filter(ReplaceTokens, tokens: [
+      version           : project.version,
+      mappingEndpointUrl: mappingApi
+  ])
+}

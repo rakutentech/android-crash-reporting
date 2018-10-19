@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:background="@android:color/white"
+  tools:context=".MainActivity">
+
+  <ImageView
+    android:id="@+id/panda"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="16dp"
+    android:layout_marginBottom="16dp"
+    android:layout_alignParentTop="true"
+    android:layout_centerHorizontal="true"
+    app:srcCompat="@drawable/panda"/>
+
+  <Button
+    android:id="@+id/numeric_overflow"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="16dp"
+    android:layout_below="@+id/panda"
+    android:text="Numeric Overflow!"
+    android:background="@color/colorPrimaryDark"
+    android:textColor="@android:color/white"/>
+
+  <Button
+    android:id="@+id/stack_overflow"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="16dp"
+    android:layout_below="@+id/numeric_overflow"
+    android:background="@color/colorPrimaryDark"
+    android:text="Stack Overflow"
+    android:textColor="@android:color/white" />
+
+  <Button
+    android:id="@+id/null_pointer"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="16dp"
+    android:layout_below="@+id/stack_overflow"
+    android:background="@color/colorPrimaryDark"
+    android:text="Nullpointer"
+    android:textColor="@android:color/white" />
+
+</RelativeLayout>

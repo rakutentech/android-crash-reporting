@@ -1,0 +1,41 @@
+
+# Excerpt from https://www.gitignore.io/api/macos,android,androidstudio
+
+# Gradle files
+.gradle/
+build/
+
+# Log Files
+*.log
+
+# Android Studio Navigation editor temp files
+.navigation/
+
+# Android Studio captures folder
+captures/
+
+# IntelliJ
+*.iml
+*.iws
+.idea
+
+# Android Studio
+local.properties
+*.ipr
+*~
+*.swp
+
+# NDK
+obj/
+
+# OS-specific files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+
+

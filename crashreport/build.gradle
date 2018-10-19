@@ -1,0 +1,39 @@
+apply from: '../config/android/library.gradle'
+
+def configApi = System.env.CRASH_CONFIG_API
+
+if (!configApi) {
+  throw new GradleException('💥 Set env variable `CRASH_CONFIG_API` in order to build this project')
+}
+
+android {
+  defaultConfig {
+    testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    multiDexEnabled true
+    buildConfigField "String", "CR_CONFIG", "\"${configApi}\""
+  }
+
+  buildTypes {
+    release {
+      minifyEnabled false
+      proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+    }
+    debug {
+    }
+  }
+  testOptions {
+    unitTests.returnDefaultValues = true
+  }
+}
+
+dependencies {
+  implementation "com.google.android.gms:play-services-iid:${CONFIG.versions.android.libraries.playServices}"
+  api 'com.android.support:support-annotations:27.0.1'
+  testImplementation 'junit:junit:4.12'
+  testImplementation 'org.mockito:mockito-core:2.11.0'
+  androidTestImplementation 'junit:junit:4.12'
+  androidTestImplementation 'com.android.support.test:runner:1.0.1'
+  androidTestImplementation 'com.android.support.test:rules:1.0.1'
+}
+
+apply from: '../config/quality/android.gradle'

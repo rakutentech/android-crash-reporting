@@ -1,0 +1,47 @@
+apply from: '../config/android/application.gradle'
+
+def apiKey = System.env.CRASH_SAMPLE_API_KEY
+
+if (!apiKey) {
+  throw new GradleException('💥 Set env variable `CRASH_SAMPLE_API_KEY` in order to build this project')
+}
+
+android {
+  defaultConfig {
+    applicationId "com.rakuten.tech.mobile.crash.sample"
+    versionCode 1
+    manifestPlaceholders = [
+        crashApiKey: apiKey
+    ]
+  }
+
+  signingConfigs {
+    release {
+      storeFile file("test_app.keystore")
+      storePassword "android"
+      keyAlias "test-app"
+      keyPassword "android"
+    }
+  }
+
+  buildTypes {
+    release {
+      minifyEnabled true
+      proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+      signingConfig signingConfigs.release
+    }
+    debug {
+      minifyEnabled false
+      proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+    }
+  }
+}
+
+dependencies {
+  implementation 'com.android.support:appcompat-v7:26.0.2'
+  implementation 'com.android.support.constraint:constraint-layout:1.0.2'
+  implementation 'com.google.android.gms:play-services-iid:11.8.0'
+  implementation project(':crashreport')
+}
+
+apply from: '../config/quality/android.gradle'
