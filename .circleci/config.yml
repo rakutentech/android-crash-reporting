@@ -1,0 +1,39 @@
+version: 2
+jobs:
+  build:
+    working_directory: ~/code
+    docker:
+      - image: circleci/android:api-28-alpha
+    environment:
+      # from https://discuss.circleci.com/t/circle-ci-v2-and-android-memory-issues/11207
+      JVM_OPTS: "-Xmx1024m -XX:+PrintFlagsFinal -XX:+PrintGCDetails"
+      _JAVA_OPTIONS: "-Xmx1024m"
+      GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.workers.max=1 -Dorg.gradle.parallel=false"
+      CRASH_CONFIG_API: "http://ci.example.com/config"
+      CRASH_MAPPING_API: "http://ci.example.com/mapping"
+      CRASH_SAMPLE_API_KEY: "NOT_A_REAL_KEY"
+    steps:
+      - checkout
+      - run: env
+      - run: git submodule update --init
+      - restore_cache:
+          key: jars-{{ checksum "build.gradle" }}-{{ checksum  "crashreport/build.gradle" }}-{{ checksum  "plugin/build.gradle" }}
+      - run:
+          name: Download Dependencies
+          command: ./gradlew androidDependencies
+      - save_cache:
+          paths:
+            - ~/.gradle
+          key: jars-{{ checksum "build.gradle" }}-{{ checksum  "crashreport/build.gradle" }}-{{ checksum  "plugin/build.gradle" }}
+      - run:
+          name: Build
+          command: ./gradlew assemble -s --info
+      - store_artifacts:
+          path: ~/code/crashreport/build/outputs/aar
+          destination: aar/
+      - store_artifacts:
+          path: ~/code/plugin/build/libs
+          destination: plugin
+      - store_artifacts:
+          path: ~/code/sample/build/outputs/apk
+          destination: sample
