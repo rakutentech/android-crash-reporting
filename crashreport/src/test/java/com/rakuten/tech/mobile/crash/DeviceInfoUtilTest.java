@@ -5,19 +5,21 @@ import static junit.framework.Assert.assertTrue;
 
 import android.content.Context;
 import android.content.pm.PackageManager.NameNotFoundException;
-import android.support.test.InstrumentationRegistry;
-import android.support.test.runner.AndroidJUnit4;
 import com.rakuten.tech.mobile.crash.utils.DeviceInfoUtil;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Config;
 
 /**
  * Instrumented unit tests for DeviceInfoUtil.java.
  */
-@RunWith(AndroidJUnit4.class)
+@RunWith(RobolectricTestRunner.class)
+@Config(sdk = 27)
 public class DeviceInfoUtilTest {
 
   private final int deviceInfoSize = 7;
@@ -26,7 +28,7 @@ public class DeviceInfoUtilTest {
 
   @Before
   public void setUp() {
-    context = InstrumentationRegistry.getTargetContext();
+    context = RuntimeEnvironment.application;
   }
 
   /**
