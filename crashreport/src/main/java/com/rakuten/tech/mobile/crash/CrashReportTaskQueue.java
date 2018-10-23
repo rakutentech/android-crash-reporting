@@ -1,5 +1,6 @@
 package com.rakuten.tech.mobile.crash;
 
+import android.support.annotation.VisibleForTesting;
 import android.util.Log;
 import com.rakuten.tech.mobile.crash.tasks.CrashReportTask;
 import java.util.LinkedList;
@@ -15,7 +16,8 @@ class CrashReportTaskQueue {
   private static final int MAX_SIZE = 50;
   private static Queue<CrashReportTask> queue = new LinkedList<>();
 
-  private CrashReportTaskQueue() {
+  @VisibleForTesting
+  CrashReportTaskQueue() {
   }
 
   static CrashReportTaskQueue getInstance() {

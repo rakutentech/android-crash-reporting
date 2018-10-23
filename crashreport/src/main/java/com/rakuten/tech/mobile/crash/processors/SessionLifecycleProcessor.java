@@ -108,7 +108,7 @@ public class SessionLifecycleProcessor implements CrashReportProcessor {
 
         // Set up app_events.
         JSONArray appEventsArray = new JSONArray();
-        HashMap<String, String> customKeysMap = new HashMap<>(CustomKeyProcessor
+        HashMap<String, String> customKeysMap = new HashMap<>(CustomKeyCache
             .getInstance().getCustomKeys());
 
         for (Map.Entry<String, String> customKey : customKeysMap.entrySet()) {
@@ -120,7 +120,7 @@ public class SessionLifecycleProcessor implements CrashReportProcessor {
         }
 
         // Includes any saved custom logs as an app_event.
-        String customLogs = CustomLogProcessor.getInstance().getCustomLogs();
+        String customLogs = CustomLogger.getInstance().getCustomLogs();
         if (!TextUtils.isEmpty(customLogs)) {
           JSONObject customLogEvent = new JSONObject();
           customLogEvent.put(CrashReportConstants.APP_KEY, CrashReportConstants.LOG);

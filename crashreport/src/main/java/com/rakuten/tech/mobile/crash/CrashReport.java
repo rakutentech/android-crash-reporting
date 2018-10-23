@@ -11,11 +11,11 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 import com.rakuten.tech.mobile.crash.exception.LogEntrySizeLimitExceededError;
 import com.rakuten.tech.mobile.crash.processors.ConfigProcessor.OnConfigSuccessCallback;
-import com.rakuten.tech.mobile.crash.processors.CustomLogProcessor;
+import com.rakuten.tech.mobile.crash.processors.CustomKeyCache;
+import com.rakuten.tech.mobile.crash.processors.CustomLogger;
 import com.rakuten.tech.mobile.crash.exception.IllegalKeyValuePairException;
 import com.rakuten.tech.mobile.crash.exception.KeyValuePairSizeExceededError;
 import com.rakuten.tech.mobile.crash.exception.MaximumCapacityReachedError;
-import com.rakuten.tech.mobile.crash.processors.CustomKeyProcessor;
 import com.rakuten.tech.mobile.crash.processors.SessionLifecycleProcessor;
 import com.rakuten.tech.mobile.crash.tasks.BackgroundTask;
 import com.rakuten.tech.mobile.crash.tasks.CrashReportTask;
@@ -48,36 +48,36 @@ public class CrashReport {
   }
 
   public void log(String message) throws LogEntrySizeLimitExceededError {
-    CustomLogProcessor.getInstance().addCustomLog(message);
+    CustomLogger.getInstance().addCustomLog(message);
   }
 
   public void setBoolean(String key, boolean value)
       throws KeyValuePairSizeExceededError, IllegalKeyValuePairException, MaximumCapacityReachedError {
-    CustomKeyProcessor.getInstance().addCustomKey(key, Boolean.toString(value));
+    CustomKeyCache.getInstance().addCustomKey(key, Boolean.toString(value));
   }
 
   public void setDouble(String key, double value)
       throws KeyValuePairSizeExceededError, IllegalKeyValuePairException, MaximumCapacityReachedError {
-    CustomKeyProcessor.getInstance().addCustomKey(key, Double.toString(value));
+    CustomKeyCache.getInstance().addCustomKey(key, Double.toString(value));
   }
 
   public void setFloat(String key, float value)
       throws KeyValuePairSizeExceededError, IllegalKeyValuePairException, MaximumCapacityReachedError {
-    CustomKeyProcessor.getInstance().addCustomKey(key, Float.toString(value));
+    CustomKeyCache.getInstance().addCustomKey(key, Float.toString(value));
   }
 
   public void setInteger(String key, int value)
       throws KeyValuePairSizeExceededError, IllegalKeyValuePairException, MaximumCapacityReachedError {
-    CustomKeyProcessor.getInstance().addCustomKey(key, Integer.toString(value));
+    CustomKeyCache.getInstance().addCustomKey(key, Integer.toString(value));
   }
 
   public void setString(String key, String value)
       throws KeyValuePairSizeExceededError, IllegalKeyValuePairException, MaximumCapacityReachedError {
-    CustomKeyProcessor.getInstance().addCustomKey(key, value);
+    CustomKeyCache.getInstance().addCustomKey(key, value);
   }
 
   public void removeCustomKey(String key) {
-    CustomKeyProcessor.getInstance().removeCustomKey(key);
+    CustomKeyCache.getInstance().removeCustomKey(key);
   }
 
   /**

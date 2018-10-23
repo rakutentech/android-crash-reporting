@@ -1,35 +1,36 @@
 package com.rakuten.tech.mobile.crash.processors;
 
-import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.VisibleForTesting;
 import android.util.Log;
 import com.rakuten.tech.mobile.crash.exception.LogEntrySizeLimitExceededError;
-import com.rakuten.tech.mobile.crash.tasks.CrashReportTask;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
 /**
  * Processor for adding in-memory arbitrary log messages in the form of circular buffer.
  */
-public class CustomLogProcessor implements CrashReportProcessor {
+public class CustomLogger {
 
-  private static final CustomLogProcessor INSTANCE = new CustomLogProcessor();
-  private final String TAG = "CustomLogProcessor";
+  private static final CustomLogger INSTANCE = new CustomLogger();
+  private final String TAG = "CustomLogger";
   private final int MAX_SIZE = 64;
   private Deque<String> logList = new ArrayDeque<>();
 
-  public static CustomLogProcessor getInstance() {
-    return INSTANCE;
-  }
 
-  @Override
-  public void processTask(Context context, CrashReportTask task) {
+  @VisibleForTesting
+  CustomLogger() {}
+
+  @NonNull
+  public static CustomLogger getInstance() {
+    return INSTANCE;
   }
 
   /**
    * Adds a new custom log to the log list.
    */
-  public synchronized void addCustomLog(String message) throws LogEntrySizeLimitExceededError {
+  public synchronized void addCustomLog(@Nullable String message) throws LogEntrySizeLimitExceededError {
 
     if (message == null) {
       Log.e(TAG, "Error passing a null message to Crash Reporting log.");
@@ -52,7 +53,7 @@ public class CustomLogProcessor implements CrashReportProcessor {
   /**
    * Default access for sessionsLifecycleProcessor to retrieve all custom logs.
    */
-  @Nullable
+  @NonNull
   String getCustomLogs() {
     // Returns empty string for no custom logs.
     if (logList.size() == 0) {
@@ -75,8 +76,5 @@ public class CustomLogProcessor implements CrashReportProcessor {
     if (logList.size() != 0) {
       logList.removeFirst();
     }
-  }
-
-  private CustomLogProcessor() {
   }
 }

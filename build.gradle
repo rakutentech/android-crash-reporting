@@ -1,11 +1,14 @@
 buildscript {
-  apply from: "config/index.gradle"
+  apply from: 'config/index.gradle'
+  CONFIG.versions.kotlin = '1.2.71'
+
   repositories {
     jcenter()
     google()
   }
   dependencies {
     classpath "com.android.tools.build:gradle:${CONFIG.versions.android.plugin}"
+    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$CONFIG.versions.kotlin"
   }
 }
 
