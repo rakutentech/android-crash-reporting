@@ -1,7 +1,9 @@
 package com.rakuten.tech.mobile.crash.processors;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import com.rakuten.tech.mobile.crash.AsyncHttpPost;
@@ -43,14 +45,10 @@ public class ConfigProcessor implements CrashReportProcessor {
       OnConfigSuccessCallback callback) {
 
     try {
-      if (serverConfig == null
-          || !serverConfig.has(CrashReportConstants.STICKY)
-          || !serverConfig.has(CrashReportConstants.OVERRIDE)
-          || !serverConfig.has(CrashReportConstants.ENABLED)
-          || !serverConfig.getJSONObject(CrashReportConstants.ENDPOINTS)
-          .has(CrashReportConstants.INSTALL)
-          || !serverConfig.getJSONObject(CrashReportConstants.ENDPOINTS)
-          .has(CrashReportConstants.SESSIONS)) {
+      if(!hasAll(serverConfig,
+          CrashReportConstants.STICKY, CrashReportConstants.OVERRIDE, CrashReportConstants.ENABLED)
+          || !hasAll(serverConfig.getJSONObject(CrashReportConstants.ENDPOINTS),
+              CrashReportConstants.INSTALL, CrashReportConstants.SESSIONS)) {
 
         callback.onSuccess(context,
             false /* isSdkEnabled */,
@@ -61,44 +59,38 @@ public class ConfigProcessor implements CrashReportProcessor {
       }
 
       boolean isEnabled;
+      boolean serverOverride = serverConfig.getBoolean(CrashReportConstants.OVERRIDE);
+      boolean serverSticky = serverConfig.getBoolean(CrashReportConstants.STICKY);
+      boolean serverEnable = serverConfig.getBoolean(CrashReportConstants.ENABLED);
+      SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
       // Checks if new configurations is an override.
-      if (serverConfig.getBoolean(CrashReportConstants.OVERRIDE)) {
+      if (serverOverride) {
 
         // If true, set STICKY enabled value in preferences to the value of enabled defined by the server.
-        if (serverConfig.getBoolean(CrashReportConstants.STICKY)) {
-
-          setConfigPreferences(context,
-              CrashReportConstants.STICKY,
-              serverConfig.getBoolean(CrashReportConstants.ENABLED));
+        if (serverSticky) {
+          prefs.edit().putBoolean(CrashReportConstants.STICKY, serverEnable).apply();
         } else {
-          PreferenceManager.getDefaultSharedPreferences(context).edit().remove
-              (CrashReportConstants.STICKY).apply();
+          prefs.edit().remove(CrashReportConstants.STICKY).apply();
         }
 
-        isEnabled = serverConfig.getBoolean(CrashReportConstants.ENABLED);
-
+        isEnabled = serverEnable;
       } else {
 
         // Check if previous configuration does contain a STICKY value.
-        if (PreferenceManager.getDefaultSharedPreferences(context)
-            .contains(CrashReportConstants.STICKY)) {
+        if (prefs.contains(CrashReportConstants.STICKY)) {
 
           // Enable the SDK using the value from STICKY.
-          isEnabled = PreferenceManager
-              .getDefaultSharedPreferences(context)
-              .getBoolean(CrashReportConstants.STICKY, Boolean.FALSE);
+          isEnabled = prefs.getBoolean(CrashReportConstants.STICKY, Boolean.FALSE);
         } else {
 
           // If true, set STICKY enabled value in cache to the value of enabled defined by the server.
-          if (serverConfig.getBoolean(CrashReportConstants.STICKY)) {
-            setConfigPreferences(context,
-                CrashReportConstants.STICKY,
-                serverConfig.getBoolean(CrashReportConstants.ENABLED));
+          if (serverSticky) {
+            prefs.edit().putBoolean(CrashReportConstants.STICKY, serverEnable).apply();
           }
 
           // Set enabled value to the value defined by the server.
-          isEnabled = serverConfig.getBoolean(CrashReportConstants.ENABLED);
+          isEnabled = serverEnable;
         }
       }
 
@@ -121,6 +113,19 @@ public class ConfigProcessor implements CrashReportProcessor {
     } catch (JSONException e) {
       Log.e(TAG, "Unable to update the host configurations with new server changes.", e);
     }
+  }
+
+  @SuppressWarnings("BooleanMethodIsAlwaysInverted")
+  private boolean hasAll(@Nullable JSONObject json, @NonNull String... keys) {
+    if(json == null) {
+      return false;
+    }
+    for(String key: keys) {
+      if(!json.has(key)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /**
@@ -168,17 +173,6 @@ public class ConfigProcessor implements CrashReportProcessor {
     }
 
     return deviceIdentifiers;
-  }
-
-  /**
-   * Set server configs as a key value pair to the app's shared preferences.
-   */
-  private void setConfigPreferences(Context context, String key, Boolean value) {
-    PreferenceManager
-        .getDefaultSharedPreferences(context)
-        .edit()
-        .putBoolean(key, value)
-        .apply();
   }
 
   /**

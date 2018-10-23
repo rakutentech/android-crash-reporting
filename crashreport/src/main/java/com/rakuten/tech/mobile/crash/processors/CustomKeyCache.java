@@ -1,32 +1,27 @@
 package com.rakuten.tech.mobile.crash.processors;
 
-import android.content.Context;
+import android.support.annotation.VisibleForTesting;
 import com.rakuten.tech.mobile.crash.CrashReportConstants;
 import com.rakuten.tech.mobile.crash.exception.IllegalKeyValuePairException;
 import com.rakuten.tech.mobile.crash.exception.KeyValuePairSizeExceededError;
 import com.rakuten.tech.mobile.crash.exception.MaximumCapacityReachedError;
-import com.rakuten.tech.mobile.crash.tasks.CrashReportTask;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * Adds arbitrary key/value pairs to crash details for debugging purposes.
+ * @hide
  */
-public class CustomKeyProcessor implements CrashReportProcessor {
+public class CustomKeyCache {
 
-  private static final CustomKeyProcessor INSTANCE = new CustomKeyProcessor();
-  private static final String TAG = "CustomKeyProcessor";
+  private static final CustomKeyCache INSTANCE = new CustomKeyCache();
   private static final Integer MAX_SIZE = 64; /* Maximum number of custom keys allowed. */
   private Map<String, String> customKeysMap = new HashMap<>();
 
-  private CustomKeyProcessor() {
-  }
+  @VisibleForTesting
+  CustomKeyCache() {}
 
-  @Override
-  public void processTask(Context context, CrashReportTask task) {
-  }
-
-  public static CustomKeyProcessor getInstance() {
+  public static CustomKeyCache getInstance() {
     return INSTANCE;
   }
 
@@ -62,7 +57,7 @@ public class CustomKeyProcessor implements CrashReportProcessor {
    */
   public void removeCustomKey(String key) {
     // Removes an existing key from the custom key map.
-    if (key != null && customKeysMap.containsKey(key)) {
+    if (key != null) {
       customKeysMap.remove(key);
     }
   }

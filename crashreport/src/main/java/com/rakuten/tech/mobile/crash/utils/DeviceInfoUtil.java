@@ -69,6 +69,7 @@ public class DeviceInfoUtil {
    * @param context required to collect information about the specific android device.
    * @return Map containing Android device and app specifications.
    */
+  @NonNull
   public Map<String, String> getDeviceIdentifiers(Context context) {
     Map<String, String> deviceIdentifiers = new HashMap<>();
 
@@ -118,6 +119,7 @@ public class DeviceInfoUtil {
    * @param context required to collect information about the specific android device.
    * @return Map containing Android device and app specifications.
    */
+  @NonNull
   public Map<String, String> getDeviceInfo(Context context) {
     Map<String, String> deviceInfo = getDeviceIdentifiers(context);
 
@@ -146,6 +148,7 @@ public class DeviceInfoUtil {
    * @param context required to collect information about the specific android device.
    * @return Map containing device information.
    */
+  @NonNull
   public Map<String, String> getDeviceDetails(Context context) {
     Map<String, String> deviceDetails = new HashMap<>();
 
