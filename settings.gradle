@@ -1,1 +1,3 @@
+rootProject.name = 'crash-reporting-parent'
+
 include ':crashreport', ':sample', ":plugin"

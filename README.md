@@ -3,7 +3,11 @@
 
 TODO: description
 
-## Buliding
+## Building
+
+Requirements:
+* JDK 8 & `JAVA_HOME` environment variable set
+* android SDK & `ANDROID_HOME` environment variable set
 
 Set the environment variables `CRASH_CONFIG_API`, `CRASH_MAPPING_API` and `CRASH_SAMPLE_API_KEY` before building
 
