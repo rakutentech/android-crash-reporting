@@ -1,6 +1,6 @@
 version: 2.1
 jobs:
-  build:
+  test:
     working_directory: ~/code
     docker:
       - image: circleci/android:api-28-alpha
@@ -14,20 +14,15 @@ jobs:
       CRASH_SAMPLE_API_KEY: "NOT_A_REAL_KEY"
     steps:
       - checkout
+      - restore_cache:
+          key: cache-{{ checksum "build.gradle" }}-{{ checksum "crashreport/build.gradle" }}-{{ checksum "plugin/build.gradle" }}-{{ checksum "sample/build.gradle" }}
       - run: env
       - run: git submodule update --init
-      - restore_cache:
-          key: jars-{{ checksum "build.gradle" }}-{{ checksum  "crashreport/build.gradle" }}-{{ checksum  "plugin/build.gradle" }}
-      - run:
-          name: Download Dependencies
-          command: ./gradlew androidDependencies
+      - run: ./gradlew clean test jacoco -s --no-daemon --info
       - save_cache:
+          key: cache-{{ checksum "build.gradle" }}-{{ checksum "crashreport/build.gradle" }}-{{ checksum "plugin/build.gradle" }}-{{ checksum "sample/build.gradle" }}
           paths:
-            - ~/.gradle
-          key: jars-{{ checksum "build.gradle" }}-{{ checksum  "crashreport/build.gradle" }}-{{ checksum  "plugin/build.gradle" }}
-      - run:
-          name: Build
-          command: ./gradlew assemble -s --info
+            - /home/circleci/.gradle/
       - store_artifacts:
           path: ~/code/crashreport/build/outputs/aar
           destination: aar/
@@ -37,3 +32,17 @@ jobs:
       - store_artifacts:
           path: ~/code/sample/build/outputs/apk
           destination: sample
+      - store_test_results:
+          path: ~/code/crashreport/build/reports/tests/testReleaseUnitTest/
+      - run:
+          shell: /bin/bash
+          command: |
+            ls ~/code/crashreport/build/jacoco/
+            ls ~/code/crashreport/build/reports/
+            bash <(curl -s https://codecov.io/bash)
+
+workflows:
+  version: 2
+  pullrequest:
+    jobs:
+      - test
