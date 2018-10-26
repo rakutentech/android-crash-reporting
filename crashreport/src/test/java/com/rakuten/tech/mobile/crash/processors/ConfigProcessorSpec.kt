@@ -1,19 +1,19 @@
 package com.rakuten.tech.mobile.crash.processors
 
+import android.content.SharedPreferences
 import android.preference.PreferenceManager
 import com.rakuten.tech.mobile.crash.CrashReportConstants
 import com.rakuten.tech.mobile.crash.RobolectricUnitSpec
 import com.rakuten.tech.mobile.crash.processors.ConfigProcessor.OnConfigSuccessCallback
+import org.amshove.kluent.shouldBeFalse
+import org.amshove.kluent.shouldBeNull
+import org.amshove.kluent.shouldBeTrue
+import org.amshove.kluent.shouldNotBeNullOrBlank
 import org.json.JSONException
 import org.json.JSONObject
 import org.junit.Before
 import org.junit.Test
 import org.robolectric.RuntimeEnvironment
-
-import org.amshove.kluent.shouldBeFalse
-import org.amshove.kluent.shouldBeNull
-import org.amshove.kluent.shouldBeTrue
-import org.amshove.kluent.shouldNotBeNullOrBlank
 
 class ConfigProcessorSpec : RobolectricUnitSpec() {
 
@@ -23,11 +23,19 @@ class ConfigProcessorSpec : RobolectricUnitSpec() {
     private var sessionEndpoint: String? = null
     private var installEndpoint: String? = null
 
+    private lateinit var prefs: SharedPreferences
+    private lateinit var configProcessor: ConfigProcessor
+
     private val callback = OnConfigSuccessCallback { _, isSdkEnabled, sessionsUrl, installsUrl ->
         enabled = isSdkEnabled
         sessionEndpoint = sessionsUrl
         installEndpoint = installsUrl
     }
+
+    private var sticky : Boolean
+        set(value) = prefs.edit().putBoolean(CrashReportConstants.STICKY, value).apply()
+        get() = prefs.getBoolean(CrashReportConstants.STICKY, false)
+
 
     @Before
     @Throws(JSONException::class)
@@ -35,7 +43,11 @@ class ConfigProcessorSpec : RobolectricUnitSpec() {
         enabled = false
         sessionEndpoint = null
         installEndpoint = null
-        PreferenceManager.getDefaultSharedPreferences(context).edit().clear().commit()
+        prefs = PreferenceManager.getDefaultSharedPreferences(context)
+
+        configProcessor = ConfigProcessor()
+
+        prefs.edit().clear().commit()
     }
 
     // base of every config response
@@ -51,9 +63,7 @@ class ConfigProcessorSpec : RobolectricUnitSpec() {
     }
 
     @Test
-    @Throws(JSONException::class, InterruptedException::class)
-    fun testCheckEnable() {
-        // Check that crash report enabled on app start up - sdk enabled.
+    fun `should enable when enable flag is true`() {
         val data = response().merge("""
             {
                 "override": false,
@@ -62,7 +72,7 @@ class ConfigProcessorSpec : RobolectricUnitSpec() {
             }
             """)
 
-        ConfigProcessor.getInstance().updateHostConfig(context, data, callback)
+        configProcessor.updateHostConfig(context, data, callback)
 
         enabled.shouldBeTrue()
         sessionEndpoint.shouldNotBeNullOrBlank()
@@ -70,9 +80,7 @@ class ConfigProcessorSpec : RobolectricUnitSpec() {
     }
 
     @Test
-    @Throws(JSONException::class, InterruptedException::class)
-    fun testCheckDisable() {
-        // Check that crash report disabled on app start up - sdk disabled.
+    fun `should disable when enable flag is false`() {
         val data = response().merge("""
             {
                 "override": false,
@@ -81,7 +89,7 @@ class ConfigProcessorSpec : RobolectricUnitSpec() {
             }
             """)
 
-        ConfigProcessor.getInstance().updateHostConfig(context, data, callback)
+        configProcessor.updateHostConfig(context, data, callback)
 
 
         enabled.shouldBeFalse()
@@ -90,12 +98,10 @@ class ConfigProcessorSpec : RobolectricUnitSpec() {
     }
 
     @Test
-    @Throws(JSONException::class, InterruptedException::class)
-    fun testEmptyJSONServerConfig() {
+    fun `should disable when config flags are missing`() {
         val data = response()
 
-        // Disable SDK when missing required JSON fields.
-        ConfigProcessor.getInstance().updateHostConfig(context, data, callback)
+        configProcessor.updateHostConfig(context, data, callback)
 
         enabled.shouldBeFalse()
         sessionEndpoint.shouldBeNull()
@@ -103,8 +109,7 @@ class ConfigProcessorSpec : RobolectricUnitSpec() {
     }
 
     @Test
-    @Throws(JSONException::class, InterruptedException::class)
-    fun testCompleteJSONServerConfigs() {
+    fun `should enable when all config flags are true`() {
         // Enables SDK with all required JSON fields and enabled as true.
         val data = response().merge("""
             {
@@ -114,7 +119,7 @@ class ConfigProcessorSpec : RobolectricUnitSpec() {
             }
             """)
 
-        ConfigProcessor.getInstance().updateHostConfig(context, data, callback)
+        configProcessor.updateHostConfig(context, data, callback)
 
         enabled.shouldBeTrue()
         sessionEndpoint.shouldNotBeNullOrBlank()
@@ -122,48 +127,35 @@ class ConfigProcessorSpec : RobolectricUnitSpec() {
     }
 
     @Test
-    @Throws(JSONException::class, InterruptedException::class)
-    fun testPartialJSONServerConfigs() {
-        // test 1
+    fun `should disable when config flags are incomplete 1` () {
         val data = response()
-        // SDK is not enabled when missing any required JSON fields.
-        ConfigProcessor.getInstance().updateHostConfig(context, data, callback)
-
-        enabled.shouldBeFalse()
-        sessionEndpoint.shouldBeNull()
-        installEndpoint.shouldBeNull()
-
-        // test 2
         data.merge(""" { "override": true } """)
 
-        ConfigProcessor.getInstance().updateHostConfig(context, data, callback)
+        configProcessor.updateHostConfig(context, data, callback)
 
         enabled.shouldBeFalse()
         sessionEndpoint.shouldBeNull()
         installEndpoint.shouldBeNull()
-
-        // test 3
-        data.merge(""" { "sticky": true } """)
-
-        ConfigProcessor.getInstance().updateHostConfig(context, data, callback)
-
-        enabled.shouldBeFalse()
-        sessionEndpoint.shouldBeNull()
-        installEndpoint.shouldBeNull()
-
-        // test 4
-        data.merge(""" { "enabled": true } """)
-        ConfigProcessor.getInstance().updateHostConfig(context, data, callback)
-
-        enabled.shouldBeTrue()
-        sessionEndpoint.shouldNotBeNullOrBlank()
-        installEndpoint.shouldNotBeNullOrBlank()
     }
 
     @Test
-    @Throws(JSONException::class, InterruptedException::class)
-    fun testCheckEnable1() {
-        // Overrides current sticky enabled false to true - sdk enabled.
+    fun `should disable when config flags are incomplete 2` () {
+        val data = response().merge("""
+            {
+                "override": true,
+                "sticky": true
+            }
+            """)
+
+        configProcessor.updateHostConfig(context, data, callback)
+
+        enabled.shouldBeFalse()
+        sessionEndpoint.shouldBeNull()
+        installEndpoint.shouldBeNull()
+    }
+
+    @Test
+    fun `should override cached sticky with true when sticky flag is true`() {
         val data = response().merge("""
             {
                 "override": true,
@@ -171,21 +163,18 @@ class ConfigProcessorSpec : RobolectricUnitSpec() {
                 "enabled": true
             }
             """)
+        sticky = false
 
-        // Preset a previous host app config.
-        PreferenceManager.getDefaultSharedPreferences(context).edit()
-                .putBoolean(CrashReportConstants.STICKY, false).apply()
-
-        ConfigProcessor.getInstance().updateHostConfig(context, data, callback)
+        configProcessor.updateHostConfig(context, data, callback)
 
         enabled.shouldBeTrue()
+        sticky.shouldBeTrue()
         sessionEndpoint.shouldNotBeNullOrBlank()
         installEndpoint.shouldNotBeNullOrBlank()
     }
 
     @Test
-    @Throws(JSONException::class, InterruptedException::class)
-    fun testCheckEnable2() {
+    fun `should override cached sticky with false when enable flag is false`() {
         // Overrides current sticky enabled true to false - sdk disabled.
         val data = response().merge("""
             {
@@ -194,21 +183,18 @@ class ConfigProcessorSpec : RobolectricUnitSpec() {
                 "enabled": false
             }
             """)
+        sticky = true
 
-        // Preset a previous host app config.
-        PreferenceManager.getDefaultSharedPreferences(context).edit()
-                .putBoolean(CrashReportConstants.STICKY, true).apply()
-
-        ConfigProcessor.getInstance().updateHostConfig(context, data, callback)
+        configProcessor.updateHostConfig(context, data, callback)
 
         enabled.shouldBeFalse()
+        sticky.shouldBeFalse()
         sessionEndpoint.shouldBeNull()
         installEndpoint.shouldBeNull()
     }
 
     @Test
-    @Throws(JSONException::class, InterruptedException::class)
-    fun testCheckEnable3() {
+    fun `should override cached sticky with false when sticky flag is false`() {
         // Overrides current sticky enabled true to true - sdk enabled.
         val data = response().merge("""
             {
@@ -217,21 +203,18 @@ class ConfigProcessorSpec : RobolectricUnitSpec() {
                 "enabled": true
             }
             """)
+        sticky = true
 
-        // Preset a previous host app config.
-        PreferenceManager.getDefaultSharedPreferences(context).edit()
-                .putBoolean(CrashReportConstants.STICKY, true).apply()
-
-        ConfigProcessor.getInstance().updateHostConfig(context, data, callback)
+        configProcessor.updateHostConfig(context, data, callback)
 
         enabled.shouldBeTrue()
+        sticky.shouldBeFalse()
         sessionEndpoint.shouldNotBeNullOrBlank()
         installEndpoint.shouldNotBeNullOrBlank()
     }
 
     @Test
-    @Throws(JSONException::class, InterruptedException::class)
-    fun testCheckEnable4() {
+    fun `should override cached sticky with false when sticky enable flags are false`() {
         // Overrides current sticky enabled true to true - sdk enabled.
         val data = response().merge("""
             {
@@ -240,22 +223,18 @@ class ConfigProcessorSpec : RobolectricUnitSpec() {
                 "enabled": false
             }
             """)
+        sticky = true
 
-        // Preset a previous host app config.
-        PreferenceManager.getDefaultSharedPreferences(context).edit()
-                .putBoolean(CrashReportConstants.STICKY, true).apply()
-
-        ConfigProcessor.getInstance().updateHostConfig(context, data, callback)
+        configProcessor.updateHostConfig(context, data, callback)
 
         enabled.shouldBeFalse()
+        sticky.shouldBeFalse()
         sessionEndpoint.shouldBeNull()
         installEndpoint.shouldBeNull()
     }
 
     @Test
-    @Throws(JSONException::class, InterruptedException::class)
-    fun testCheckEnable5() {
-        // No override current sticky enabled false - sdk disabled.
+    fun `should not override cached sticky and enable when override flage is false`() {
         val data = response().merge("""
             {
                 "override": false,
@@ -263,22 +242,18 @@ class ConfigProcessorSpec : RobolectricUnitSpec() {
                 "enabled": true
             }
             """)
+        sticky = false
 
-        // Preset a previous host app config.
-        PreferenceManager.getDefaultSharedPreferences(context).edit()
-                .putBoolean(CrashReportConstants.STICKY, false).apply()
-
-        ConfigProcessor.getInstance().updateHostConfig(context, data, callback)
+        configProcessor.updateHostConfig(context, data, callback)
 
         enabled.shouldBeFalse()
+        sticky.shouldBeFalse()
         sessionEndpoint.shouldBeNull()
         installEndpoint.shouldBeNull()
     }
 
     @Test
-    @Throws(JSONException::class, InterruptedException::class)
-    fun testCheckEnable6() {
-        // No override current sticky enabled true - sdk enabled.
+    fun `should not override cached sticky (true) when override is false 1`() {
         val data = response().merge("""
             {
                 "override": false,
@@ -286,22 +261,18 @@ class ConfigProcessorSpec : RobolectricUnitSpec() {
                 "enabled": true
             }
             """)
+        sticky = true
 
-        // Preset a previous host app config.
-        PreferenceManager.getDefaultSharedPreferences(context).edit()
-                .putBoolean(CrashReportConstants.STICKY, true).apply()
-
-        ConfigProcessor.getInstance().updateHostConfig(context, data, callback)
+        configProcessor.updateHostConfig(context, data, callback)
 
         enabled.shouldBeTrue()
+        sticky.shouldBeTrue()
         sessionEndpoint.shouldNotBeNullOrBlank()
         installEndpoint.shouldNotBeNullOrBlank()
     }
 
     @Test
-    @Throws(JSONException::class, InterruptedException::class)
-    fun testCheckEnable7() {
-        // No override current sticky enabled false - sdk disabled.
+    fun `should not override cached sticky (false) when override is false`() {
         val data = response().merge("""
             {
                 "override": false,
@@ -309,22 +280,18 @@ class ConfigProcessorSpec : RobolectricUnitSpec() {
                 "enabled": false
             }
             """)
+        sticky = false
 
-        // Preset a previous host app config.
-        PreferenceManager.getDefaultSharedPreferences(context).edit()
-                .putBoolean(CrashReportConstants.STICKY, false).apply()
-
-        ConfigProcessor.getInstance().updateHostConfig(context, data, callback)
+        configProcessor.updateHostConfig(context, data, callback)
 
         enabled.shouldBeFalse()
+        sticky.shouldBeFalse()
         sessionEndpoint.shouldBeNull()
         installEndpoint.shouldBeNull()
     }
 
     @Test
-    @Throws(JSONException::class, InterruptedException::class)
-    fun testCheckEnable8() {
-        // No override current sticky enabled true - sdk enabled.
+    fun `should not override cached sticky (true) when override is false 2`() {
         val data = response().merge("""
             {
                 "override": false,
@@ -332,14 +299,12 @@ class ConfigProcessorSpec : RobolectricUnitSpec() {
                 "enabled": false
             }
             """)
+        sticky = true
 
-        // Preset a previous host app config.
-        PreferenceManager.getDefaultSharedPreferences(context).edit()
-                .putBoolean(CrashReportConstants.STICKY, true).apply()
-
-        ConfigProcessor.getInstance().updateHostConfig(context, data, callback)
+        configProcessor.updateHostConfig(context, data, callback)
 
         enabled.shouldBeTrue()
+        sticky.shouldBeTrue()
         sessionEndpoint.shouldNotBeNullOrBlank()
         installEndpoint.shouldNotBeNullOrBlank()
     }

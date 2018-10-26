@@ -1,18 +1,17 @@
 package com.rakuten.tech.mobile.crash
 
 import com.rakuten.tech.mobile.crash.AsyncHttpPost.CrashServerURL
-
-import java.net.HttpURLConnection
 import org.json.JSONObject
 import org.junit.Before
 import org.junit.Test
-import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.Mockito.*
 import org.mockito.MockitoAnnotations
-import org.robolectric.RobolectricTestRunner
-import org.robolectric.annotation.Config
-import java.io.*
+import java.io.ByteArrayInputStream
+import java.io.IOException
+import java.io.InputStream
+import java.io.OutputStream
+import java.net.HttpURLConnection
 import java.net.URLConnection
 
 class AsyncHttpPostSpec : RobolectricUnitSpec() {
@@ -30,12 +29,8 @@ class AsyncHttpPostSpec : RobolectricUnitSpec() {
         asyncHttpPost = AsyncHttpPost(stubURL, JSONObject("{}"))
     }
 
-    /**
-     * Verify if AsyncHttpPost execute() has correctly connected to crash server.
-     */
     @Test
-    @Throws(IOException::class)
-    fun testExecute() {
+    fun `should do a lot of things`() { // TODO: this test conflates many behaviors. should split
 
         `when`<URLConnection>(stubURL.openConnection()).thenReturn(mockConnection)
         `when`(mockConnection.outputStream).thenReturn(mockOutputStream)
@@ -54,25 +49,26 @@ class AsyncHttpPostSpec : RobolectricUnitSpec() {
         verify<HttpURLConnection>(mockConnection).disconnect()
     }
 
-    /**
-     * Verify if AsyncHttpPost execute() can handle an IOException while creating a connection to crash server.
-     */
     @Test
-    @Throws(IOException::class)
-    fun testExecuteThrowsIOException() {
+    fun `should should handle IOExceptions`() {
         `when`<URLConnection>(stubURL.openConnection()).thenThrow(IOException())
 
         asyncHttpPost.doInBackground()
 
-        verifyNoConnectionInteraction()
+        verify<HttpURLConnection>(mockConnection, times(0))
+                .setRequestProperty(eq("Content-Type"), eq("application/json; charset=utf-8"))
+        verify<HttpURLConnection>(mockConnection, times(0)).requestMethod = eq("POST")
+        verify<HttpURLConnection>(mockConnection, times(0)).doOutput = true
+        verify<HttpURLConnection>(mockConnection, times(0)).doInput = true
+        verify<HttpURLConnection>(mockConnection, times(0)).connect()
+        verify<HttpURLConnection>(mockConnection, times(0)).responseCode
+        verify<HttpURLConnection>(mockConnection, times(0)).errorStream
+        verify<HttpURLConnection>(mockConnection, times(0)).responseMessage
+        verify<HttpURLConnection>(mockConnection, times(0)).disconnect()
     }
 
-    /**
-     * Tests if AsyncHttpPost execute() has correct functionality during an IOException.
-     */
     @Test
-    @Throws(IOException::class)
-    fun verifyNoConnectionInteraction() {
+    fun `should not start HTTP request withou explicit call to doInBackground`() {
         verify<HttpURLConnection>(mockConnection, times(0))
                 .setRequestProperty(eq("Content-Type"), eq("application/json; charset=utf-8"))
         verify<HttpURLConnection>(mockConnection, times(0)).requestMethod = eq("POST")
