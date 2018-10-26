@@ -10,9 +10,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 
-@RunWith(RobolectricTestRunner::class)
-@Config(sdk = intArrayOf(27))
-class DeviceInfoUtilSpec {
+class DeviceInfoUtilSpec : RobolectricUnitSpec() {
 
     private val deviceInfoSize = 7
     private val deviceDetailSize = 7
