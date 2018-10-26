@@ -2,24 +2,20 @@ package com.rakuten.tech.mobile.crash.processors
 
 import android.preference.PreferenceManager
 import com.rakuten.tech.mobile.crash.CrashReportConstants
+import com.rakuten.tech.mobile.crash.RobolectricUnitSpec
 import com.rakuten.tech.mobile.crash.processors.ConfigProcessor.OnConfigSuccessCallback
 import org.json.JSONException
 import org.json.JSONObject
 import org.junit.Before
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
-import org.robolectric.annotation.Config
 
 import org.amshove.kluent.shouldBeFalse
 import org.amshove.kluent.shouldBeNull
 import org.amshove.kluent.shouldBeTrue
 import org.amshove.kluent.shouldNotBeNullOrBlank
 
-@RunWith(RobolectricTestRunner::class)
-@Config(sdk = intArrayOf(27))
-class ConfigProcessorSpec {
+class ConfigProcessorSpec : RobolectricUnitSpec() {
 
     private val context = RuntimeEnvironment.application
 

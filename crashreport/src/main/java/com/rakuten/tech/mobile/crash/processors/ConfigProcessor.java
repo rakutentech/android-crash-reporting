@@ -134,8 +134,7 @@ public class ConfigProcessor implements CrashReportProcessor {
   @Nullable
   private JSONObject getServerConfig(Context context) {
     JSONObject deviceIdentifiers = new JSONObject(DeviceInfoUtil
-        .getInstance()
-        .getDeviceIdentifiers(context));
+        .getInstance().getDeviceIdentifiers(context));
 
     try {
       deviceIdentifiers.put(CrashReportConstants.SDK_VERSION, BuildConfig.VERSION_NAME);
@@ -144,8 +143,8 @@ public class ConfigProcessor implements CrashReportProcessor {
           (CrashReportConstants.VERSION));
       deviceIdentifiers.remove(CrashReportConstants.VERSION);
 
-      AsyncHttpPost.CrashServerURL url = new AsyncHttpPost.CrashServerURL(
-          new URL(BuildConfig.CR_CONFIG));
+      AsyncHttpPost.CrashServerURL url =
+          new AsyncHttpPost.CrashServerURL(new URL(BuildConfig.CR_CONFIG));
       AsyncHttpPost request = new AsyncHttpPost(url, deviceIdentifiers);
 
       // Checks for the status code of the post request.

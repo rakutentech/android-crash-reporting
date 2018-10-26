@@ -15,12 +15,7 @@ import org.robolectric.annotation.Config
 import java.io.*
 import java.net.URLConnection
 
-/**
- * Unit tests for AsyncHttpPost.java.
- */
-@RunWith(RobolectricTestRunner::class)
-@Config(sdk = intArrayOf(27))
-class AsyncHttpPostSpec {
+class AsyncHttpPostSpec : RobolectricUnitSpec() {
     @Mock
     internal lateinit var stubURL: CrashServerURL
     @Mock
@@ -32,7 +27,6 @@ class AsyncHttpPostSpec {
 
     @Before
     fun setup() {
-        MockitoAnnotations.initMocks(this)
         asyncHttpPost = AsyncHttpPost(stubURL, JSONObject("{}"))
     }
 
