@@ -18,54 +18,48 @@ class CrashReportTaskQueueSpec {
 
     private val queue = CrashReportTaskQueue()
 
-    /**
-     * Test if queue will enqueue and dequeue CrashReportTasks.
-     */
     @Test
-    fun testEnqueueCrashReportTask() {
+    fun `should confirm enqueue`() {
         queue.enqueue(backgroundTask).shouldBeTrue()
     }
 
     @Test
-    fun testDequeueCrashReportTask() {
+    fun `should dequeue previously added task (fifo)`() {
         queue.enqueue(backgroundTask)
 
         queue.dequeue().shouldEqual(backgroundTask)
     }
 
-    /**
-     * Test queue and dequeue for all implementations of CrashReportTask.
-     */
     @Test
-    fun testQueueOnForegroundTask() {
+    fun `should accept ForgroundTask`() {
         queue.enqueue(foregroundTask)
 
         queue.dequeue().shouldBeInstanceOf(ForegroundTask::class)
     }
 
     @Test
-    fun testQueueOnBackgroundTask() {
+    fun `should accept BackgroundTask`() {
         queue.enqueue(backgroundTask)
 
         queue.dequeue().shouldBeInstanceOf(BackgroundTask::class)
     }
 
     @Test
-    fun testQueueOnNewInstallTask() {
+    fun `should accept NewInstallTask`() {
         queue.enqueue(installTask)
 
         queue.dequeue().shouldBeInstanceOf(NewInstallTask::class)
     }
 
     @Test
-    fun testQueueOnFlushLifecyclesTask() {
+    fun `should accept FlushLifecycleTask`() {
         queue.enqueue(flushTask)
 
         queue.dequeue().shouldBeInstanceOf(FlushLifecyclesTask::class)
     }
 
     @Test
-    fun testEnqueueDequeueInOrder() {
+    fun `should dequeue in specific order if enqueued in same order`() {
         queue.enqueue(flushTask)
         queue.enqueue(foregroundTask)
         queue.enqueue(backgroundTask)
@@ -78,7 +72,7 @@ class CrashReportTaskQueueSpec {
     }
 
     @Test
-    fun testEnqueueDequeueOutOfOrder() {
+    fun `should dequeue in specific order if enqueued in different order`() {
         queue.enqueue(flushTask)
         queue.enqueue(foregroundTask)
         queue.enqueue(backgroundTask)

@@ -2,43 +2,30 @@ package com.rakuten.tech.mobile.crash
 
 import android.content.pm.PackageManager.NameNotFoundException
 import com.rakuten.tech.mobile.crash.utils.DeviceInfoUtil
+import org.amshove.kluent.shouldBeEmpty
 import org.amshove.kluent.shouldContain
 import org.amshove.kluent.shouldEqual
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
-import org.robolectric.annotation.Config
 
 class DeviceInfoUtilSpec : RobolectricUnitSpec() {
 
-    private val deviceInfoSize = 7
-    private val deviceDetailSize = 7
     private val context = RuntimeEnvironment.application
 
     private val infoUtil = DeviceInfoUtil.getInstance()
 
-    /**
-     * Test if device info would contain a fixed number of map elements.
-     */
     @Test
-    fun testDeviceInfoJsonObjectSize() {
-        infoUtil.getDeviceInfo(context).size.shouldEqual(deviceInfoSize)
+    fun `device info should have 7 entries`() {
+        infoUtil.getDeviceInfo(context).size.shouldEqual(7)
     }
 
-    /**
-     * Test if device details would contain a fixed number of map elements.
-     */
     @Test
-    fun testDeviceDetailsJsonObjectSize() {
-        infoUtil.getDeviceDetails(context).size.shouldEqual(deviceDetailSize)
+    fun `device details should have 7 entries`() {
+        infoUtil.getDeviceDetails(context).size.shouldEqual(7)
     }
 
-    /**
-     * Test if device info map contains the correct key fields.
-     */
     @Test
-    fun testDeviceInfoJsonObjectKeys() {
+    fun `device info should contain expected keys`() {
         val deviceInfoMap = infoUtil.getDeviceInfo(context)
 
 
@@ -50,11 +37,8 @@ class DeviceInfoUtilSpec : RobolectricUnitSpec() {
         deviceInfoMap.keys.shouldContain(CrashReportConstants.LOCALE)
     }
 
-    /**
-     * Test if device details map contains the correct key fields.
-     */
     @Test
-    fun testDeviceDetailsJsonObjectKeys() {
+    fun `device details should contain expected keys`() {
         val deviceDetailsMap = infoUtil.getDeviceDetails(context)
 
         deviceDetailsMap.keys.shouldContain(CrashReportConstants.MAKE)
@@ -66,27 +50,22 @@ class DeviceInfoUtilSpec : RobolectricUnitSpec() {
         deviceDetailsMap.keys.shouldContain(CrashReportConstants.MEMORY)
     }
 
-    /**
-     * Test if device details with null context will return an empty map.
-     */
-    @Suppress("UNUSED_VARIABLE")
     @Test
-    fun testDeviceDetailsNullContext() {
+    fun `device detail should be empty for null context`() {
         val deviceDetailsMap = infoUtil.getDeviceDetails(null)
+
+        deviceDetailsMap.shouldBeEmpty()
     }
 
-    /**
-     * Test if device info with null context will return an empty map.
-     */
-    @Suppress("UNUSED_VARIABLE")
     @Test
-    fun testDeviceInfoNullContext() {
+    fun `device info should be empty for null context`() {
         val deviceInfoMap = infoUtil.getDeviceInfo(null)
+
+        deviceInfoMap.shouldBeEmpty()
     }
 
     @Test
-    fun testGetDeviceVersion() {
-        // Arrange.
+    fun `device version should be package versionName_versionCode`() {
         val version = try {
             val info = context.packageManager.getPackageInfo(context.packageName, 0)
 
@@ -95,16 +74,12 @@ class DeviceInfoUtilSpec : RobolectricUnitSpec() {
                     .append("_")
                     .append(info.versionCode)
                     .toString()
-
         } catch (e: NameNotFoundException) {
-            e.printStackTrace()
             ""
         }
 
-        // Act.
         val deviceInfo = infoUtil.getDeviceInfo(context)
 
-        // Assert.
         deviceInfo["version"].shouldEqual(version)
     }
 }

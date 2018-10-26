@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.VisibleForTesting;
 import android.util.Log;
 import com.rakuten.tech.mobile.crash.AsyncHttpPost;
 import com.rakuten.tech.mobile.crash.BuildConfig;
@@ -26,7 +27,8 @@ public class ConfigProcessor implements CrashReportProcessor {
   private final static String TAG = "ConfigProcessor";
   private final static ConfigProcessor INSTANCE = new ConfigProcessor();
 
-  private ConfigProcessor() {
+  @VisibleForTesting
+  ConfigProcessor() {
   }
 
   public static ConfigProcessor getInstance() {

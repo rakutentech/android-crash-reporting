@@ -1,14 +1,11 @@
 package com.rakuten.tech.mobile.crash.processors
 
-import org.junit.Assert.*
-
 import com.rakuten.tech.mobile.crash.exception.IllegalKeyValuePairException
 import com.rakuten.tech.mobile.crash.exception.KeyValuePairSizeExceededError
-import com.rakuten.tech.mobile.crash.exception.MaximumCapacityReachedError
 import org.amshove.kluent.*
 import org.junit.Before
-import java.util.Arrays
 import org.junit.Test
+import java.util.*
 
 class CustomKeyCacheSpec {
 
@@ -21,16 +18,12 @@ class CustomKeyCacheSpec {
     }
 
     @Test(expected = IllegalKeyValuePairException::class)
-    @Throws(KeyValuePairSizeExceededError::class, IllegalKeyValuePairException::class, MaximumCapacityReachedError::class)
-    fun addNullCustomKeyToMap1() {
-        // Assert true that map will not contain null custom key.
+    fun `should not accept null as key`() {
         cache.addCustomKey(null, value)
     }
 
     @Test(expected = KeyValuePairSizeExceededError::class)
-    @Throws(KeyValuePairSizeExceededError::class, IllegalKeyValuePairException::class, MaximumCapacityReachedError::class)
-    fun rejectLargeCustomKeyFromMap() {
-        // Reject custom key that reaches the 1KB limit or greater.
+    fun `should reject key-value pairs with over 1 kB`() {
         val chars = CharArray(1000)
         Arrays.fill(chars, 'a')
 
@@ -38,16 +31,14 @@ class CustomKeyCacheSpec {
     }
 
     @Test
-    @Throws(KeyValuePairSizeExceededError::class, IllegalKeyValuePairException::class, MaximumCapacityReachedError::class)
-    fun addNullCustomKeyToMap() {
-        // Assert true that map will contain custom key with a null string value.
+    fun `should accept null values`() {
         cache.addCustomKey(key, null)
 
         cache.customKeys.keys.shouldContain(key)
     }
 
     @Test
-    fun removeNullKeyFromMap() {
+    fun `remove null key should not change the cache content`() {
         val originalMap = cache.customKeys.toMap()
 
         // Should not make any changes to the custom map.
@@ -57,28 +48,21 @@ class CustomKeyCacheSpec {
     }
 
     @Test
-    @Throws(KeyValuePairSizeExceededError::class, IllegalKeyValuePairException::class, MaximumCapacityReachedError::class)
-    fun addAndRemoveCustomKeyFromMap() {
-        // Assert true that custom key is inserted and map contains the key.
+    fun `should add key value pair`() {
         cache.addCustomKey(key, value)
+
         cache.customKeys.shouldNotBeEmpty()
-
-        // Assert false that map does contain key; After key removal by setting value to null.
-        cache.removeCustomKey(key)
-        cache.customKeys.keys.shouldNotContain(key)
-
-        // Map contains size 0.
-        cache.customKeys.shouldBeEmpty()
+        cache.customKeys.keys.shouldContain(key)
+        cache.customKeys[key].shouldEqual(value)
     }
 
     @Test
-    @Throws(KeyValuePairSizeExceededError::class, IllegalKeyValuePairException::class, MaximumCapacityReachedError::class)
-    fun getCustomValueFromMap() {
-        // Assert true that custom key can be used to retrieve its value from map.
+    fun `should remove key value pair`() {
         cache.addCustomKey(key, value)
 
-        assertTrue(cache.customKeys.containsKey(key))
-        assertTrue(cache.customKeys[key] == value)
-        assertTrue(cache.customKeys.size == 1)
+        cache.removeCustomKey(key)
+
+        cache.customKeys.keys.shouldNotContain(key)
+        cache.customKeys.shouldBeEmpty()
     }
 }
